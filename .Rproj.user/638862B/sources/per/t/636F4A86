@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1580463917710.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "757993204",
+    "id" : "636F4A86",
+    "lastKnownWriteTime" : 1580469249,
+    "last_content_update" : 1580469249313,
+    "path" : "~/Documents/ENSTA/SIM202/building-appliances/analyse.R",
+    "project_path" : "analyse.R",
+    "properties" : {
+        "cursorPosition" : "41,0",
+        "scrollLine" : "27"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
