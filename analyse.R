@@ -1,5 +1,5 @@
 rm(list = objects())
-
+graphics.off()
 setwd("/home/lokmen/Documents/ENSTA/SIM202/building-appliances/")   # set working directory
 
 library(readr)
@@ -10,18 +10,46 @@ data <- read_delim("train.csv", col_names = TRUE, delim = ",")
 
 #str(data)
 #head(data)
-#summary(data)
+summary(data)
+attach(data)
+cons =data$Appliances
+plot(data$date, data$Appliances, type = 'l')
 
-#plot(data$date, data$Appliances, type = 'l')
-#hist(data$Appliances)
+######################################
+########## Histogram  ###########
+######################################
+
+#histogram avec 40 marches
+hist(cons,breaks =40,main="Frequence des consomations",xlab="Quantités Consommées",
+     ylab="Frequence",col="green",proba=T)
+h<-hist(cons,breaks =seq(min(cons),max(cons),by=10),plot =FALSE)
+h$counts
+s = max(h$counts)
+m=min(cons)+which.max(h$counts)*10
+# hist du min au max avec pas de 10
+hist(cons,breaks =seq(min(cons),max(cons),by=10),main="Frequence des consomations",
+     xlab="Quantités Consommées", ylab="Frequence",col="green",proba=T)
+#histo du min au max avec pas de 10 tronqué à 200
+hist(cons,breaks =seq(min(cons),max(cons),by=10),main="Frequence des consomations",
+     xlab="Quantités Consommées", ylab="Frequence",col="green",proba=F, 
+     xlim=c(0,200),ylim=c(0,3000))
 
 
-#plot(data$periode, data$T1-data$T2, type = 'h')
+curve(dnorm(x,mean=m,sd =s**(1/2)), add =T, col = "red")
+curve(dnorm(x,mean=mean(cons),sd =sd(cons)), add =T, col = "red")
+
+
+
+
+
+
+
+#plot(data$date<"2016-02-01", data$T1-data$T2, type = 'h')
 
 
 #plot(data$date, data$T1-data$T2, type = 'h')
 
-selectByDate(
+#selectByDate(
   data,
   start = "1/1/2016",
   end = "01/02/2016",
