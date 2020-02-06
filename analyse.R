@@ -5,8 +5,41 @@ setwd("/home/lokmen/Documents/ENSTA/SIM202/building-appliances/")   # set workin
 library(readr)
 
 data <- read_delim("train.csv", col_names = TRUE, delim = ",")
+data_test<- read_delim("test.csv", col_names = TRUE, delim = ",")
 # Pas besoin de mettre une date car il y en a deja une
 # Tracer variables en fonction d'une autre, voir correlation etc
+
+
+
+
+Applience = data$Appliances#[1:7000]
+summary(data)
+train<-as.data.frame(data[,1], drop=false)
+train<-data$T5[1:7000]
+lm(Applience~as.data.frame(data[,1], drop=false))
+
+
+
+#Appliance.lm = lm(data$Appliances[1:7000]~data$lights[1:7000] + data$T2[1:7000] + data$T6[1:7000] + data$RH_8[1:7000] + data$T_out[1:7000] + data$RH_out[1:7000] + data$NSM[1:7000] + data$Windspeed[1:7000])
+Appliance.lm = lm(data$Appliances~data$lights + data$T2 + data$T6+ data$RH_8 + data$T_out + data$RH_out + data$NSM + data$Windspeed)
+Appliance.lm = lm(Appliances~lights + T2 + T6+ RH_8 + T_out + RH_out + NSM + Windspeed)
+
+
+summary(Appliance.lm)
+step.model.test<-predict(Appliance.lm, data_test)
+which(is.na(step.model.test))
+
+
+submit <- read.csv(file="sample_submission.csv", sep=",", dec=".")
+submit$Appliances <- step.model.test
+
+dim(submit)
+head(submit)
+submit$Appliances <- step.model.test
+str(submit)
+
+write.table(submit, file="submission_lm.csv", quote=F, sep=",", dec='.',row.names = F)
+
 
 #str(data)
 #head(data)
@@ -24,7 +57,8 @@ hist(cons,breaks =40,main="Frequence des consomations",xlab="QuantitÃ©s ConsommÃ
      ylab="Frequence",col="green",proba=T)
 h<-hist(cons,breaks =seq(min(cons),max(cons),by=10),plot =FALSE)
 h$counts
-s = max(h$counts)
+#s = max(h$counts) ### Si on prend le max atteint en terme de repetition
+#s=m(cons)   ### Si on prend l'occurence maximale.
 m=min(cons)+which.max(h$counts)*10
 # hist du min au max avec pas de 10
 hist(cons,breaks =seq(min(cons),max(cons),by=10),main="Frequence des consomations",
@@ -39,9 +73,15 @@ curve(dnorm(x,mean=m,sd =s**(1/2)), add =T, col = "red")
 curve(dnorm(x,mean=mean(cons),sd =sd(cons)), add =T, col = "red")
 
 
+######################################
+########## Corelation  ###########
+######################################
+library(corrplot)
+round(cor(df),4) # MAtrice de correlation ie de(s) covariance(s) 
+corrplot(cor(df),method = "number",type="upper")
 
-
-
+#pairs(~ x1 + x3, data = data, labels = c("var1", "var3"),  
+#         main = "This is a nice pairs plot in R")) #faire un scatterplot en enlevant la variable x2
 
 
 #plot(data$date<"2016-02-01", data$T1-data$T2, type = 'h')
