@@ -2,21 +2,69 @@ rm(list = objects())
 graphics.off()
 setwd("/home/lokmen/Documents/ENSTA/SIM202/building-appliances/")   # set working directory
 
-
 source("rmse.R")
 library(readr)
+library(mgcv) # modélisation non linéaire
 library(tidyverse)
 library(lubridate)
 library(ranger)
+library(zoo)
 
 #data <- read_delim("train.csv", col_names = TRUE, delim = ",")
 #data_test<- read_delim("test.csv", col_names = TRUE, delim = ",")
 data0<-read.csv(file="train.csv", sep=",", dec='.')
 data_test<-read.csv(file="test.csv", sep=",", dec='.')
 
-# Pas besoin de mettre une date car il y en a deja une
-# Tracer variables en fonction d'une autre, voir correlation etc
 
+# On se débarasse des variables qui sont des facteurs. On les voit avec la commande str()
+str(data0)
+data_num <- subset( data0, select = -c(date,WeekStatus,Day_of_week,DayType, InstantF))
+
+
+
+# On cherche les coeffictions fortement correlés à Appliencies
+# on peut observer qu'il y a beaucoup de NA
+cor(data_num)[1,]
+which(is.na(cor(data_num)[,1]))
+
+
+# Pour visibility on voit que les valeurs sont assez continues et ne change pas énormément. On remplace les NA par 
+#la moyenne de valeurs autour. Rayon =2
+for (i in is.na(data0$Visibility)){
+  data0$Visibility[i]<-(data0$Visibility[i+1]+data0$Visibility[i-1])/2
+}
+# On voit que ça a bien fonctionneé
+which(is.na(data0$Visibility))
+
+
+#On utilise na.approx qui est dans me package zoo pour remplacer les NA par interpolation
+data_num<-data.frame(na.approx(data_num))
+
+
+cor(data_num)[1,2:ncol(data_num)]
+#il persiste une correaltion sous forme de NA. On la retire
+data_num <- subset( data_num, select = -BE_wind_onshore_capacity)
+
+####
+##  Dans cette partie on retire les variables qui sont correlé à moins de 20% de la plus corrélée
+####
+
+max_corel<-max(abs(cor(data_num)[1,2:ncol(data_num)]))
+liste_petit<-list()
+for (i in c(ncol(data_num):2)){
+  if (abs(cor(data_num)[1,i])< 0.20*max_corel)
+  {
+    print(cor(data_num)[1,i])
+    liste_petit<-c(liste_petit,i)
+    data_num <- subset( data_num, select =-i)
+  }
+}
+
+ncol(data_num)
+
+g0<-gam(Appliances ~s(T1,k=20), data=data0[-s,])
+summary(g0)
+plot(g0,pch=TRUE)
 
 ################################
 ##############################
@@ -57,56 +105,12 @@ write.table(submit, file="submission_lm.csv", quote=F, sep=",", dec='.',row.name
 ###### Methode stepwise
 #####################################""
 #########################################
+data0<-data_num
 
 cov <- head(names(data0)[-c(1,2)], 30) 
 n <- nrow(data0)
 set.seed(100)
-s <- sample(c(1:n), size=floor(n*0.5))
-length(s)
-
-l="Appliances ~"
-eq_list =list()
-eq_list[[1]] <-  paste0(l, paste0(cov[1], collapse='+'))
-
-####### On génère une liste de formule
-for(i in c(1:length(cov)))
-{
-  eq_list[[i]] <-  paste0(l, paste0(cov[[i]], collapse='+'))
-  eq_list[[i]]
-}
-
-####### On génère une liste de regression linéaire
-fitMod <- function(eq, subset)
-{
-  reg <- lm(eq, data=data0[-subset,])
-  return(reg)
-}
-reg_list <- lapply(eq_list, fitMod, subset=s)
-
-####### On prédit à partir de des regressions linéaires 
-reg_list_forecast <- lapply(reg_list, predict, newdata=data0[s,])
-
-rmse(reg_list_forecast[[1]],data0[s,]$Appliances)
-rmse_list <- lapply(reg_list_forecast, rmse, data0[s,]$Appliances)
-j = which.min(rmse_list) ## On repère l'indice qui minimise l'erreur
-### D'abord on vérifie qu'il y a un gain à rajouter la jème variable
-l
-if (rmse(reg_list_forecast[[j]],data0[s,]$Appliances) <score )
-{
-  score = rmse(reg_list_forecast[[j]],data0[s,]$Appliances)
-  l <- paste0(l, paste0(cov[j], collapse='+')) ## On rajoute le terme qui minimise à notre equation
-  l <-paste0(l, '+')
-}
-cov[-j]
-l
-
-
-####### Algorrithme Stepwise propre
-
-cov <- head(names(data0)[-c(1,2)], 30) 
-n <- nrow(data0)
-set.seed(100)
-s <- sample(c(1:n), size=floor(n*0.5))
+s <- sample(c(1:n), size=floor(n*0.7))
 length(s)
 
 l="Appliances ~"
@@ -150,13 +154,6 @@ submit$Appliances <- step.model.test
 
 write.table(submit, file="submission_lm.csv", quote=F, sep=",", dec='.',row.names = F)
 
-
-#str(data)
-#head(data)
-summary(data)
-attach(data)
-cons =data$Appliances
-plot(data$date, data$Appliances, type = 'l')
 
 ######################################
 ########## Histogram  ###########
@@ -208,20 +205,6 @@ corrplot(cor(df),method = "number",type="upper")
 #  day = "weekday",
 #  hour = 1
 #)
-
-
-# CONSTRUIR UN MODELE DE REGRESSION LINEAIRE
-n<-length(data$Appliances)/2
-
-set.seed(100)
-#rnorm(13)
-mysample <- data[sample(1:nrow(data), n, replace=T),] 
-print(mysample)
-
-s<-sample(data)
-
-s
-cov<-head(names(data)[-c(1,2)],30)
 
 
 
