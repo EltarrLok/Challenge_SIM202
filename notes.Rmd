@@ -1,0 +1,81 @@
+---
+title: "SIM202"
+author: "Durand & Eltarr"
+date: "17/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#Trucs à faire
+## Reduction de dimension
+
+plein de vidéos youtube https://www.youtube.com/watch?v=ccKsdnKc3kI&list=PLk7j1JonL-RzRFxCC6Vwam3ovlWfR7a3G&index=2
+ACP https://www.analyticsvidhya.com/blog/2016/03/pca-practical-guide-principal-component-analysis-python/
+http://www.sthda.com/french/articles/38-methodes-des-composantes-principales-dans-r-guide-pratique/73-acp-analyse-en-composantes-principales-avec-r-l-essentiel/#notions-de-base
+
+## intepolation
+ arbre décissionel : http://r-statistics.co/Missing-Value-Treatment-With-R.html
+ splines et/ou smouth https://www.r-bloggers.com/interpolation-and-smoothing-functions-in-base-r/
+ regression par méthode des moindres carrés
+ http://rstudio-pubs-static.s3.amazonaws.com/199692_d02c8f7b352e4ec1b85544432ac28896.html
+ step.Gam 
+ https://cran.r-project.org/web/packages/interp/interp.pdf
+ 
+## xgboost
+un kaggler explique comment àa s'utilise https://www.kaggle.com/jiashenliu/updated-xgboost-with-parameter-tuning
+
+## logistic regression
+?
+
+## forecast combination
+article qui parle du package de yannig https://robjhyndman.com/hyndsight/forecast-combinations/
+package de yannig https://rdrr.io/cran/opera/man/opera-package.html
+
+## GAM
+step.Gam
+How to set up parameters for gam model
+
+
+## Interpolation
+On a essaye plusieurs méthodes :
+GAM, knn.reg, step(lm), loess.
+Aucune n'es concluante pour l'isntant.
+
+
+
+
+## Multicolinearity
+On utlise la fonction omcdiag du package mctest de r et qui singifie Overall Multicollinearity Diagnostics Measure. Elle utilise plusieurs test pour décider si il y a de la colinéarité ou pas. Comme par exemple le test de Farrar Chi-carré. Aussi la fonction imcdiag qui affiche les VIF et qui fait un test de Farrar-Glauber.
+
+omcdiag(data0[,c(seq(4,14,2),seq(15,19,2))],data0$Appliances)
+imcdiag(data0[,c(seq(4,14,2),seq(15,19,2))],data0$Appliances)
+
+Ce dernier tableau montre que toutes les températures causent de multicolinéarité d'après le test de Farrar-Glauber.
+
+Ensuite on fait pcor avec un test de pearson. C'est pour repérer "la trajectoire " de la multicolinéarité
+round(pcor(data0[,c(seq(4,14,2),seq(15,19,2))],method = 'pearson')$estimate,3)
+
+source https://www.r-bloggers.com/dealing-with-the-problem-of-multicollinearity-in-r/
+et un peu http://larmarange.github.io/analyse-R/multicolinearite.html
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
